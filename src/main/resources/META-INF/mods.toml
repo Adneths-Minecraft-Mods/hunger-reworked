@@ -1,0 +1,29 @@
+modLoader="javafml"
+loaderVersion="[40,)"
+license="The MIT License"
+#issueTrackerURL=""
+[[mods]]
+modId="hunger_reworked"
+version="${file.jarVersion}"
+displayName="Hunger Reworked"
+#updateJSONURL=""
+#displayURL=""
+logoFile="logo.png"
+#credits=""
+authors="Adneths"
+description='''
+Changes the way food works
+'''
+
+[[dependencies.hunger_reworked]]
+    modId="forge"
+    mandatory=true
+    versionRange="[40,)"
+    ordering="NONE"
+    side="BOTH"
+[[dependencies.hunger_reworked]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="[1.18.2,1.19)"
+    ordering="NONE"
+    side="BOTH"
