@@ -2,5 +2,8 @@
   "effect.hunger_reworked.overstuffed": "Overstuffed",
   "effect.hunger_reworked.strong_stomach": "Strong Stomach",
   "effect.hunger_reworked.vomiting": "Vomiting",
-  "item.minecraft.potion.effect.strong_stomach_potion": "Potion of Strong Stomach"
+  "item.minecraft.lingering_potion.effect.strong_stomach_potion": "Lingering Potion of Strong Stomach",
+  "item.minecraft.potion.effect.strong_stomach_potion": "Potion of Strong Stomach",
+  "item.minecraft.splash_potion.effect.strong_stomach_potion": "Splash Potion of Strong Stomach",
+  "item.minecraft.tipped_arrow.effect.strong_stomach_potion": "Arrow of Strong Stomach"
 }

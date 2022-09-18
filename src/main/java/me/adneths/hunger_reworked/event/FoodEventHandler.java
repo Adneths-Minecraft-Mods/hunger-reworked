@@ -114,8 +114,6 @@ public class FoodEventHandler
 		ItemStack stack = event.getItemStack();
 		BlockState state = event.getWorld().getBlockState(event.getPos());
 		Player player = event.getPlayer();
-		if(player.getAbilities().instabuild)
-			event.setCanceled(true);
 		if (state.getBlock().equals(Blocks.CAKE))
 		{
 			if (!stack.is(ItemTags.CANDLES) || state.getValue(CakeBlock.BITES) != 0)

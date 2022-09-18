@@ -21,5 +21,8 @@ public class GenLanguageProvider extends LanguageProvider
 		add("effect."+HungerReworked.MODID+"."+Registration.OVERSTUFFED.getId().getPath(), "Overstuffed");
 		
 		add("item.minecraft.potion.effect.strong_stomach_potion", "Potion of Strong Stomach");
+		add("item.minecraft.splash_potion.effect.strong_stomach_potion", "Splash Potion of Strong Stomach");
+		add("item.minecraft.lingering_potion.effect.strong_stomach_potion", "Lingering Potion of Strong Stomach");
+		add("item.minecraft.tipped_arrow.effect.strong_stomach_potion", "Arrow of Strong Stomach");
 	}
 }
