@@ -45,22 +45,26 @@ public class FoodEventHandler
 		Player player = ClientSide.minecraft.player;
 		if (player.getAbilities().instabuild)
 			return;
-		int foodAmount = player.getCapability(PlayerStomachProvider.PLAYER_STOMACH).orElse(null).totalFood;
-		MobEffectInstance ss = player.getEffect(Registration.STRONG_STOMACH.get());
-		int ssa = ss == null ? 0 : ss.getAmplifier() + 1;
+		player.getCapability(PlayerStomachProvider.PLAYER_STOMACH).ifPresent((stomach) -> {
+			int foodAmount = stomach.totalFood;
+			
+			MobEffectInstance ss = player.getEffect(Registration.STRONG_STOMACH.get());
+			int ssa = ss == null ? 0 : ss.getAmplifier() + 1;
 
-		int left = width / 2 + 91;
-		int top = height - gui.right_height;
-		RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-		RenderSystem.setShader(GameRenderer::getPositionTexShader);
-		RenderSystem.setShaderTexture(0, TEXTURE_LOCATION);
-		int maxAmount = Math.max(foodAmount, 20 + ssa * 8);
-		for (int j = 0; j < Math.max(1, maxAmount + 19 / 20); j++)
-			for (int i = 0; i < Math.min(10, j == 0 ? 10 : ((maxAmount + 1) / 2) - j * 10); i++)
-				GuiComponent.blit(poseStack, left - 9 - 8 * i, top - 10 * j, 8, 8, foodAmount - i * 2 - j * 20 < 1 ? 0 : foodAmount - i * 2 - j * 20 == 1 ? 16 : 32,
-						j > 0 && i + j * 10 - 10 < ssa * 4 ? 16 : 0, 16, 16, 48, 32);
+			int left = width / 2 + 91;
+			int top = height - gui.right_height;
+			RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+			RenderSystem.setShader(GameRenderer::getPositionTexShader);
+			RenderSystem.setShaderTexture(0, TEXTURE_LOCATION);
+			int maxAmount = Math.max(foodAmount, 20 + ssa * 8);
+			for (int j = 0; j < Math.max(1, maxAmount + 19 / 20); j++)
+				for (int i = 0; i < Math.min(10, j == 0 ? 10 : ((maxAmount + 1) / 2) - j * 10); i++)
+					GuiComponent.blit(poseStack, left - 9 - 8 * i, top - 10 * j, 8, 8, foodAmount - i * 2 - j * 20 < 1 ? 0 : foodAmount - i * 2 - j * 20 == 1 ? 16 : 32,
+							j > 0 && i + j * 10 - 10 < ssa * 4 ? 16 : 0, 16, 16, 48, 32);
 
-		gui.right_height += 10 * (1 + (foodAmount - 1) / 20);
+			gui.right_height += 10 * (1 + (foodAmount - 1) / 20);
+		});
+		
 	};
 
 	@SubscribeEvent
@@ -73,12 +77,16 @@ public class FoodEventHandler
 	@SubscribeEvent
 	public static void onPlayerCloned(PlayerEvent.Clone event)
 	{
-		if (event.isWasDeath())
+		if (!event.isWasDeath())
+		{
+			event.getOriginal().reviveCaps();
 			event.getOriginal().getCapability(PlayerStomachProvider.PLAYER_STOMACH).ifPresent(oldStore -> {
 				event.getPlayer().getCapability(PlayerStomachProvider.PLAYER_STOMACH).ifPresent(newStore -> {
 					newStore.copyFrom(oldStore);
 				});
 			});
+			event.getOriginal().invalidateCaps();
+		}
 	}
 
 	@SubscribeEvent
@@ -103,7 +111,7 @@ public class FoodEventHandler
 		if (tickCounter++ > 60)
 		{
 			if (!event.player.getAbilities().instabuild)
-				event.player.getCapability(PlayerStomachProvider.PLAYER_STOMACH).orElse(null).digest(event.player, 0.1f);
+				event.player.getCapability(PlayerStomachProvider.PLAYER_STOMACH).ifPresent((stomach) -> stomach.digest(event.player, 0.1f));
 			tickCounter = 0;
 		}
 	}
@@ -121,21 +129,23 @@ public class FoodEventHandler
 				event.setCancellationResult(InteractionResult.SUCCESS);
 				event.setCanceled(true);
 				
-				player.getCapability(PlayerStomachProvider.PLAYER_STOMACH).orElse(null).addFood(event.getPlayer(), new Food(2, 0.1f, 0, Food.EMPTY_EFFECTS));
+				player.getCapability(PlayerStomachProvider.PLAYER_STOMACH).ifPresent((stomach) -> {
+					stomach.addFood(event.getPlayer(), new Food(2, 0.1f, 0, Food.EMPTY_EFFECTS));
 
-				Level level = player.level;
-				player.awardStat(Stats.EAT_CAKE_SLICE);
-				int i = state.getValue(CakeBlock.BITES);
-				level.gameEvent(player, GameEvent.EAT, event.getPos());
-				if (i < 6)
-				{
-					level.setBlock(event.getPos(), state.setValue(CakeBlock.BITES, Integer.valueOf(i + 1)), 3);
-				}
-				else
-				{
-					level.removeBlock(event.getPos(), false);
-					level.gameEvent(player, GameEvent.BLOCK_DESTROY, event.getPos());
-				}
+					Level level = player.level;
+					player.awardStat(Stats.EAT_CAKE_SLICE);
+					int i = state.getValue(CakeBlock.BITES);
+					level.gameEvent(player, GameEvent.EAT, event.getPos());
+					if (i < 6)
+					{
+						level.setBlock(event.getPos(), state.setValue(CakeBlock.BITES, Integer.valueOf(i + 1)), 3);
+					}
+					else
+					{
+						level.removeBlock(event.getPos(), false);
+						level.gameEvent(player, GameEvent.BLOCK_DESTROY, event.getPos());
+					}
+				});
 			}
 		}
 	}
@@ -150,33 +160,34 @@ public class FoodEventHandler
 			{
 				event.setCanceled(true);
 
-				PlayerStomach stomach = player.getCapability(PlayerStomachProvider.PLAYER_STOMACH).orElse(null);
-				stomach.addFood(player, new PlayerStomach.Food(event.getItem().getFoodProperties(player)));
+				player.getCapability(PlayerStomachProvider.PLAYER_STOMACH).ifPresent((stomach) -> {
+					stomach.addFood(player, new PlayerStomach.Food(event.getItem().getFoodProperties(player)));
 
-				Level pLevel = player.level;
-				player.awardStat(Stats.ITEM_USED.get(pFood.getItem()));
-				pLevel.playSound((Player) null, player.getX(), player.getY(), player.getZ(), SoundEvents.PLAYER_BURP, SoundSource.PLAYERS, 0.5F, pLevel.random.nextFloat() * 0.1F + 0.9F);
-				if (player instanceof ServerPlayer)
-					CriteriaTriggers.CONSUME_ITEM.trigger((ServerPlayer) player, pFood);
+					Level pLevel = player.level;
+					player.awardStat(Stats.ITEM_USED.get(pFood.getItem()));
+					pLevel.playSound((Player) null, player.getX(), player.getY(), player.getZ(), SoundEvents.PLAYER_BURP, SoundSource.PLAYERS, 0.5F, pLevel.random.nextFloat() * 0.1F + 0.9F);
+					if (player instanceof ServerPlayer)
+						CriteriaTriggers.CONSUME_ITEM.trigger((ServerPlayer) player, pFood);
 
-				pLevel.gameEvent(player, GameEvent.EAT, player.eyeBlockPosition());
-				pLevel.playSound((Player) null, player.getX(), player.getY(), player.getZ(), player.getEatingSound(pFood), SoundSource.NEUTRAL, 1.0F,
-						1.0F + (pLevel.random.nextFloat() - pLevel.random.nextFloat()) * 0.4F);
-				if (!player.getAbilities().instabuild)
-					pFood.shrink(1);
-				player.gameEvent(GameEvent.EAT);
+					pLevel.gameEvent(player, GameEvent.EAT, player.eyeBlockPosition());
+					pLevel.playSound((Player) null, player.getX(), player.getY(), player.getZ(), player.getEatingSound(pFood), SoundSource.NEUTRAL, 1.0F,
+							1.0F + (pLevel.random.nextFloat() - pLevel.random.nextFloat()) * 0.4F);
+					if (!player.getAbilities().instabuild)
+						pFood.shrink(1);
+					player.gameEvent(GameEvent.EAT);
 
-				if (!pLevel.isClientSide || player.isUsingItem())
-				{
-					InteractionHand interactionhand = player.getUsedItemHand();
-					if (!player.getUseItem().equals(player.getItemInHand(interactionhand)))
-						player.releaseUsingItem();
-					else if (!player.getUseItem().isEmpty() && player.isUsingItem())
+					if (!pLevel.isClientSide || player.isUsingItem())
 					{
-						player.triggerItemUseEffects(player.getUseItem(), 16);
-						player.stopUsingItem();
+						InteractionHand interactionhand = player.getUsedItemHand();
+						if (!player.getUseItem().equals(player.getItemInHand(interactionhand)))
+							player.releaseUsingItem();
+						else if (!player.getUseItem().isEmpty() && player.isUsingItem())
+						{
+							player.triggerItemUseEffects(player.getUseItem(), 16);
+							player.stopUsingItem();
+						}
 					}
-				}
+				});
 			}
 		}
 	}

@@ -40,7 +40,7 @@ public class FoodMobEffect extends MobEffect
 			if(!pLivingEntity.level.isClientSide && pLivingEntity instanceof Player player && player.hasEffect(Registration.OVERSTUFFED.get()))
 			{
 				PlayerStomach data = player.getCapability(PlayerStomachProvider.PLAYER_STOMACH).orElse(null);
-				if(data.totalFood - (1+pAmplifier)*8 <= 20)
+				if(data != null && data.totalFood - (1+pAmplifier)*8 <= 20)
 					player.removeEffect(Registration.OVERSTUFFED.get());
 			}
 		}
