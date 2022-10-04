@@ -31,6 +31,7 @@ import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraftforge.client.gui.IIngameOverlay;
 import net.minecraftforge.common.capabilities.RegisterCapabilitiesEvent;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
+import net.minecraftforge.event.ForgeEventFactory;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingEntityUseItemEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
@@ -43,7 +44,7 @@ public class FoodEventHandler
 	protected static final ResourceLocation TEXTURE_LOCATION = new ResourceLocation(HungerReworked.MODID, "textures/gui/stomach.png");
 	public static IIngameOverlay STOMACH_OVERLAY = (gui, poseStack, partialTicks, width, height) -> {
 		Player player = ClientSide.minecraft.player;
-		if (player.getAbilities().instabuild)
+		if (player.getAbilities().instabuild || player.isSpectator())
 			return;
 		player.getCapability(PlayerStomachProvider.PLAYER_STOMACH).ifPresent((stomach) -> {
 			int foodAmount = stomach.totalFood;
@@ -156,13 +157,13 @@ public class FoodEventHandler
 		if (event.getEntityLiving() instanceof Player player)
 		{
 			ItemStack pFood = event.getItem();
-			if (player.getUseItemRemainingTicks() == 1 && event.getItem().isEdible())
+			if (player.getUseItemRemainingTicks() == 1 && pFood.isEdible())
 			{
 				event.setCanceled(true);
 
 				player.getCapability(PlayerStomachProvider.PLAYER_STOMACH).ifPresent((stomach) -> {
 					stomach.addFood(player, new PlayerStomach.Food(event.getItem().getFoodProperties(player)));
-
+					
 					Level pLevel = player.level;
 					player.awardStat(Stats.ITEM_USED.get(pFood.getItem()));
 					pLevel.playSound((Player) null, player.getX(), player.getY(), player.getZ(), SoundEvents.PLAYER_BURP, SoundSource.PLAYERS, 0.5F, pLevel.random.nextFloat() * 0.1F + 0.9F);
@@ -172,8 +173,6 @@ public class FoodEventHandler
 					pLevel.gameEvent(player, GameEvent.EAT, player.eyeBlockPosition());
 					pLevel.playSound((Player) null, player.getX(), player.getY(), player.getZ(), player.getEatingSound(pFood), SoundSource.NEUTRAL, 1.0F,
 							1.0F + (pLevel.random.nextFloat() - pLevel.random.nextFloat()) * 0.4F);
-					if (!player.getAbilities().instabuild)
-						pFood.shrink(1);
 					player.gameEvent(GameEvent.EAT);
 
 					if (!pLevel.isClientSide || player.isUsingItem())
@@ -188,6 +187,11 @@ public class FoodEventHandler
 						}
 					}
 				});
+				
+				ItemStack old = pFood.copy();
+				if (!player.getAbilities().instabuild)
+					pFood.shrink(1);
+				ForgeEventFactory.onItemUseFinish(player, old, 0, pFood);
 			}
 		}
 	}
