@@ -36,21 +36,21 @@ minecraft {
             workingDirectory project.file('runClient')
             property 'forge.logging.markers', 'REGISTRIES'
             property 'forge.logging.console.level', 'debug'
-            property 'forge.enabledGameTestNamespaces', 'ravager_titan'
+            property 'forge.enabledGameTestNamespaces', 'hunger_reworked'
             mods { 'hunger_reworked' { source sourceSets.main } }
         }
         server {
             workingDirectory project.file('runServer')
             property 'forge.logging.markers', 'REGISTRIES'
             property 'forge.logging.console.level', 'debug'
-            property 'forge.enabledGameTestNamespaces', 'ravager_titan'
+            property 'forge.enabledGameTestNamespaces', 'hunger_reworked'
             mods { 'hunger_reworked' { source sourceSets.main } }
         }
         gameTestServer {
             workingDirectory project.file('runTest')
             property 'forge.logging.markers', 'REGISTRIES'
             property 'forge.logging.console.level', 'debug'
-            property 'forge.enabledGameTestNamespaces', 'ravager_titan'
+            property 'forge.enabledGameTestNamespaces', 'hunger_reworked'
             mods { 'hunger_reworked' { source sourceSets.main } }
         }
         data {
