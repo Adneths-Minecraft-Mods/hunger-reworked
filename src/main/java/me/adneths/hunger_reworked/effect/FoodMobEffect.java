@@ -3,6 +3,7 @@ package me.adneths.hunger_reworked.effect;
 import me.adneths.hunger_reworked.capability.PlayerStomach;
 import me.adneths.hunger_reworked.capability.PlayerStomachProvider;
 import me.adneths.hunger_reworked.init.Registration;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -64,8 +65,9 @@ public class FoodMobEffect extends MobEffect
 				}
 
 				Level level = player.level;
-				level.playSound(player, player.blockPosition(), SoundEvents.SLIME_SQUISH, SoundSource.PLAYERS, 1, 1 + level.random.nextFloat()*.2f);
-				level.playSound(player, player.blockPosition(), SoundEvents.DROWNED_HURT, SoundSource.PLAYERS, 1, 1 + level.random.nextFloat()*.2f);
+				BlockPos blockPos = new BlockPos(player.position());
+				level.playSound(player, blockPos, SoundEvents.SLIME_SQUISH, SoundSource.PLAYERS, 1, 1 + level.random.nextFloat()*.2f);
+				level.playSound(player, blockPos, SoundEvents.DROWNED_HURT, SoundSource.PLAYERS, 1, 1 + level.random.nextFloat()*.2f);
 				Vec3 pos = player.getEyePosition();
 				for (int j = 0; j < 5; ++j)
 					level.addParticle(ParticleTypes.ITEM_SLIME, pos.x, pos.y, pos.z, 0,0,0);

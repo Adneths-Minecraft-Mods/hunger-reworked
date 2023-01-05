@@ -13,7 +13,7 @@ public class DataGenerators {
     public static void gatherData(GatherDataEvent event) {
         DataGenerator generator = event.getGenerator();
         if (event.includeClient()) {
-            generator.addProvider(new GenLanguageProvider(generator, "en_us"));
+            generator.m_123914_(new GenLanguageProvider(generator, "en_us"));
         }
     }
 }
