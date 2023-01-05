@@ -17,8 +17,10 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.CakeBlock;
+import net.minecraft.world.level.block.CandleBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraftforge.common.capabilities.RegisterCapabilitiesEvent;
@@ -91,7 +93,7 @@ public class FoodEventHandler
 		Player player = event.getPlayer();
 		if (state.getBlock().equals(Blocks.CAKE))
 		{
-			if (!stack.is(ItemTags.CANDLES) || state.getValue(CakeBlock.BITES) != 0)
+			if (!stack.is(ItemTags.CANDLES) || state.getValue(CakeBlock.BITES) != 0 || !(Block.byItem(stack.getItem()) instanceof CandleBlock))
 			{
 				event.setCancellationResult(InteractionResult.SUCCESS);
 				event.setCanceled(true);
