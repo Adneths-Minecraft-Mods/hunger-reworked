@@ -12,7 +12,7 @@ import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.brewing.BrewingRecipeRegistry;
-import net.minecraftforge.common.crafting.NBTIngredient;
+import net.minecraftforge.common.crafting.StrictNBTIngredient;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLLoadCompleteEvent;
@@ -25,9 +25,9 @@ public class CommonSide
 	{
 		Messages.register();
 		event.enqueueWork(() -> {
-			BrewingRecipeRegistry.addRecipe(NBTIngredient.of(getPotion(Potions.AWKWARD)), Ingredient.of(Items.CALCITE, Items.NAUTILUS_SHELL), getPotion(Registration.STRONG_STOMACH_POTION.get()));
-			BrewingRecipeRegistry.addRecipe(NBTIngredient.of(getPotion(Registration.STRONG_STOMACH_POTION.get())), Ingredient.of(Items.REDSTONE), getPotion(Registration.STRONG_STOMACH_POTION_LONG.get()));
-			BrewingRecipeRegistry.addRecipe(NBTIngredient.of(getPotion(Registration.STRONG_STOMACH_POTION.get())), Ingredient.of(Items.GLOWSTONE_DUST), getPotion(Registration.STRONG_STOMACH_POTION_STRONG.get()));
+			BrewingRecipeRegistry.addRecipe(StrictNBTIngredient.of(getPotion(Potions.AWKWARD)), Ingredient.of(Items.CALCITE, Items.NAUTILUS_SHELL), getPotion(Registration.STRONG_STOMACH_POTION.get()));
+			BrewingRecipeRegistry.addRecipe(StrictNBTIngredient.of(getPotion(Registration.STRONG_STOMACH_POTION.get())), Ingredient.of(Items.REDSTONE), getPotion(Registration.STRONG_STOMACH_POTION_LONG.get()));
+			BrewingRecipeRegistry.addRecipe(StrictNBTIngredient.of(getPotion(Registration.STRONG_STOMACH_POTION.get())), Ingredient.of(Items.GLOWSTONE_DUST), getPotion(Registration.STRONG_STOMACH_POTION_STRONG.get()));
 		});
 		MinecraftForge.EVENT_BUS.register(FoodEventHandler.class);
 	}

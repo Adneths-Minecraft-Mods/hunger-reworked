@@ -10,19 +10,18 @@ import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.player.Player;
-import net.minecraftforge.client.gui.ForgeIngameGui;
-import net.minecraftforge.client.gui.IIngameOverlay;
-import net.minecraftforge.client.gui.OverlayRegistry;
+import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
+import net.minecraftforge.client.gui.overlay.IGuiOverlay;
+import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 
 public class ClientSide
 {
 	public static Minecraft minecraft;
-	public static boolean isClient = false;
 	
 	protected static final ResourceLocation TEXTURE_LOCATION = new ResourceLocation(HungerReworked.MODID, "textures/gui/stomach.png");
-	public static IIngameOverlay STOMACH_OVERLAY = (gui, poseStack, partialTicks, width, height) -> {
+	public static IGuiOverlay STOMACH_OVERLAY = (gui, poseStack, partialTicks, width, height) -> {
 		Player player = ClientSide.minecraft.player;
 		if (player.getAbilities().instabuild || player.isSpectator())
 			return;
@@ -33,7 +32,7 @@ public class ClientSide
 			int ssa = ss == null ? 0 : ss.getAmplifier() + 1;
 
 			int left = width / 2 + 91;
-			int top = height - gui.right_height;
+			int top = height - gui.rightHeight;
 			RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
 			RenderSystem.setShader(GameRenderer::getPositionTexShader);
 			RenderSystem.setShaderTexture(0, TEXTURE_LOCATION);
@@ -43,7 +42,7 @@ public class ClientSide
 					GuiComponent.blit(poseStack, left - 9 - 8 * i, top - 10 * j, 8, 8, foodAmount - i * 2 - j * 20 < 1 ? 0 : foodAmount - i * 2 - j * 20 == 1 ? 16 : 32,
 							j > 0 && i + j * 10 - 10 < ssa * 4 ? 16 : 0, 16, 16, 48, 32);
 
-			gui.right_height += 10 * (1 + (foodAmount - 1) / 20);
+			gui.rightHeight += 10 * (1 + (foodAmount - 1) / 20);
 		});
 	};
 	
@@ -51,7 +50,11 @@ public class ClientSide
 	public static void init(final FMLClientSetupEvent event)
 	{
 		minecraft = Minecraft.getInstance();
-		isClient = true;
-		OverlayRegistry.registerOverlayAbove(ForgeIngameGui.FOOD_LEVEL_ELEMENT, "stomach_hud", STOMACH_OVERLAY);
+	}
+	
+	@SubscribeEvent
+	public static void onRegisterOverlay(RegisterGuiOverlaysEvent event)
+	{
+		event.registerAbove(VanillaGuiOverlay.FOOD_LEVEL.id(), "stomach_hud", STOMACH_OVERLAY);
 	}
 }

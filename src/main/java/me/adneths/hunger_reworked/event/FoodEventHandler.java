@@ -43,7 +43,7 @@ public class FoodEventHandler
 		{
 			event.getOriginal().reviveCaps();
 			event.getOriginal().getCapability(PlayerStomachProvider.PLAYER_STOMACH).ifPresent(oldStore -> {
-				event.getPlayer().getCapability(PlayerStomachProvider.PLAYER_STOMACH).ifPresent(newStore -> {
+				event.getEntity().getCapability(PlayerStomachProvider.PLAYER_STOMACH).ifPresent(newStore -> {
 					newStore.copyFrom(oldStore);
 				});
 			});
@@ -54,7 +54,7 @@ public class FoodEventHandler
 	@SubscribeEvent
 	public static void onPlayerJoined(PlayerLoggedInEvent event)
 	{
-		Player player = event.getPlayer();
+		Player player = event.getEntity();
 		if (!player.level.isClientSide)
 			PlayerStomach.sendUpdatePacket(player);
 	}
@@ -82,8 +82,8 @@ public class FoodEventHandler
 	public static void onPlayerEatCake(PlayerInteractEvent.RightClickBlock event)
 	{
 		ItemStack stack = event.getItemStack();
-		BlockState state = event.getWorld().getBlockState(event.getPos());
-		Player player = event.getPlayer();
+		BlockState state = event.getLevel().getBlockState(event.getPos());
+		Player player = event.getEntity();
 		if (state.getBlock().equals(Blocks.CAKE))
 		{
 			if (!stack.is(ItemTags.CANDLES) || state.getValue(CakeBlock.BITES) != 0 || !(Block.byItem(stack.getItem()) instanceof CandleBlock))
@@ -92,7 +92,7 @@ public class FoodEventHandler
 				event.setCanceled(true);
 				
 				player.getCapability(PlayerStomachProvider.PLAYER_STOMACH).ifPresent((stomach) -> {
-					stomach.addFood(event.getPlayer(), new Food(2, 0.1f, 0, Food.EMPTY_EFFECTS));
+					stomach.addFood(player, new Food(2, 0.1f, 0, Food.EMPTY_EFFECTS));
 
 					Level level = player.level;
 					player.awardStat(Stats.EAT_CAKE_SLICE);
