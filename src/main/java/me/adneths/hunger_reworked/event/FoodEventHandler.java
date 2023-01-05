@@ -4,14 +4,9 @@ import me.adneths.hunger_reworked.HungerReworked;
 import me.adneths.hunger_reworked.capability.PlayerStomach;
 import me.adneths.hunger_reworked.capability.PlayerStomach.Food;
 import me.adneths.hunger_reworked.capability.PlayerStomachProvider;
-import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
 import net.minecraft.tags.ItemTags;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
@@ -25,9 +20,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraftforge.common.capabilities.RegisterCapabilitiesEvent;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
-import net.minecraftforge.event.ForgeEventFactory;
 import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.entity.living.LivingEntityUseItemEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
@@ -115,51 +108,6 @@ public class FoodEventHandler
 						level.gameEvent(player, GameEvent.BLOCK_DESTROY, event.getPos());
 					}
 				});
-			}
-		}
-	}
-
-	@SubscribeEvent
-	public static void onPlayerEat(LivingEntityUseItemEvent.Tick event)
-	{
-		if (event.getEntityLiving() instanceof Player player)
-		{
-			ItemStack pFood = event.getItem();
-			if (player.getUseItemRemainingTicks() == 1 && pFood.isEdible())
-			{
-				event.setCanceled(true);
-
-				player.getCapability(PlayerStomachProvider.PLAYER_STOMACH).ifPresent((stomach) -> {
-					stomach.addFood(player, new PlayerStomach.Food(event.getItem().getFoodProperties(player)));
-					
-					Level pLevel = player.level;
-					player.awardStat(Stats.ITEM_USED.get(pFood.getItem()));
-					pLevel.playSound((Player) null, player.getX(), player.getY(), player.getZ(), SoundEvents.PLAYER_BURP, SoundSource.PLAYERS, 0.5F, pLevel.random.nextFloat() * 0.1F + 0.9F);
-					if (player instanceof ServerPlayer)
-						CriteriaTriggers.CONSUME_ITEM.trigger((ServerPlayer) player, pFood);
-
-					pLevel.gameEvent(player, GameEvent.EAT, player.eyeBlockPosition());
-					pLevel.playSound((Player) null, player.getX(), player.getY(), player.getZ(), player.getEatingSound(pFood), SoundSource.NEUTRAL, 1.0F,
-							1.0F + (pLevel.random.nextFloat() - pLevel.random.nextFloat()) * 0.4F);
-					player.gameEvent(GameEvent.EAT);
-
-					if (!pLevel.isClientSide || player.isUsingItem())
-					{
-						InteractionHand interactionhand = player.getUsedItemHand();
-						if (!player.getUseItem().equals(player.getItemInHand(interactionhand)))
-							player.releaseUsingItem();
-						else if (!player.getUseItem().isEmpty() && player.isUsingItem())
-						{
-							player.triggerItemUseEffects(player.getUseItem(), 16);
-							player.stopUsingItem();
-						}
-					}
-				});
-				
-				ItemStack old = pFood.copy();
-				if (!player.getAbilities().instabuild)
-					pFood.shrink(1);
-				ForgeEventFactory.onItemUseFinish(player, old, 0, pFood);
 			}
 		}
 	}

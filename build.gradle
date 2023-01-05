@@ -12,6 +12,22 @@ dependencies {
     minecraft 'net.minecraftforge:forge:1.18.2-40.1.73'
 }
 
+mixin {
+	add sourceSets.main, 'hunger_reworked.refmap.json'
+	config 'hunger_reworked.mixins.json'
+	
+	debug.verbose = true
+    debug.export = true
+}
+
+jar {
+    manifest {
+        attributes([
+			'MixinConfigs': 'hunger_reworked.mixins.json'
+        ])
+    }
+}
+
 
 println "Java: ${System.getProperty 'java.version'}, JVM: ${System.getProperty 'java.vm.version'} (${System.getProperty 'java.vendor'}), Arch: ${System.getProperty 'os.arch'}"
 minecraft {
