@@ -24,6 +24,6 @@ Changes the way food works
 [[dependencies.hunger_reworked]]
     modId="minecraft"
     mandatory=true
-    versionRange="[1.18.2,1.19)"
+    versionRange="[1.19.2,1.20)"
     ordering="NONE"
     side="BOTH"
