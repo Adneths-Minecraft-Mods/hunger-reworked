@@ -27,7 +27,7 @@ public class Messages
 		INSTANCE = net;
 
 		net.messageBuilder(StomachPacket.class, id(), NetworkDirection.PLAY_TO_CLIENT).decoder(StomachPacket::new)
-				.encoder(StomachPacket::toBytes).consumer(StomachPacket::handle).add();
+				.encoder(StomachPacket::toBytes).consumerMainThread(StomachPacket::handle).add();
 	}
 	public static <MSG> void sendToPlayer(MSG message, ServerPlayer player)
 	{
