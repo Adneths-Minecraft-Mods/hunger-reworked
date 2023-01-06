@@ -3,6 +3,7 @@
 	"compatibilityLevel": "JAVA_17",
 	"minVersion": "0.8.5",
 	"package": "me.adneths.hunger_reworked.core.mixin",
+	"refmap": "hunger_reworked.refmap.json",
 	"mixins": [],
 	"client": ["MixinPlayer",
 			   "MixinLivingEntity"],
