@@ -34,88 +34,107 @@ public class PlayerStomach
 		content.add(food);
 		if(!player.level.isClientSide)
 		{
-		totalFood += food.food;
-		sendUpdatePacket(player);
+			totalFood += food.food;
+			sendUpdatePacket(player);
 		}
 	}
 
 	public void popFood(Player player)
 	{
-		content.remove(content.size()-1);
+		content.remove(content.size() - 1);
 		if(!player.level.isClientSide)
 		{
 			totalFood = 0;
-			content.forEach((food) -> {totalFood += food.foodRemaining();});
+			content.forEach((food) -> {
+				totalFood += food.foodRemaining();
+			});
 			sendUpdatePacket(player);
 		}
 	}
-	
-	public void digest(Player player, float amount)
-	{		
-		FoodData data = player.getFoodData();
-		double part = amount;
-		double spillover = 0;
-		int maxFood = 20-data.getFoodLevel();
-		float satAmount = 0;
-		for (int i = 0; i < content.size() && maxFood > 0; i++)
+
+	private int foodDigested = 0;
+	private float satDigested = 0;
+
+	private double digest(Food food, double amount, int maxGain)
+	{
+		double nProgress = food.progress + amount / food.sat;
+		double spill = 0;
+		if(nProgress > 1)
 		{
-			if (i != content.size() - 1) part /= 2;
-			Food food = content.get(i);
-
-			double newProg = food.progress + (part+spillover)/food.getDigest();
-			int maxGain = food.foodGained(Math.min(1, newProg));
-			if(maxGain > maxFood)
-			{
-				food.progress += food.digestNeeded(maxFood);
-				maxFood = 0;
-				break;
-			}
-			else
-			{
-				maxFood -= maxGain;
-				satAmount += food.satGained(newProg);
-				if(newProg < 1)
-					food.progress = newProg;
-				else
-				{
-					spillover = (newProg-1)*food.getDigest();
-					content.remove(i--);
-					if(!player.level.isClientSide)
-						for (Pair<MobEffectInstance, Float> pair : food.getEffects())
-							if (!player.level.isClientSide && pair.getFirst() != null && player.level.random.nextFloat() < pair.getSecond())
-								player.addEffect(new MobEffectInstance(pair.getFirst()));
-				}
-			}
+			spill = (nProgress - 1) * food.sat;
+			nProgress = 1;
 		}
+		int foodGain = food.foodGained(nProgress);
+		if(maxGain < foodGain)
+		{
+			nProgress = food.factorDigestNeeded(maxGain);
+			foodGain = maxGain;
+		}
+		foodDigested += foodGain;
+		satDigested += food.satGained(nProgress);
 
+		food.progress = nProgress;
+
+		return spill;
+	}
+
+	public void digest(Player player, double amount)
+	{
 		if(!player.level.isClientSide)
 		{
-			data.setFoodLevel(20-maxFood);
-			data.setSaturation(Math.min(data.getFoodLevel(), satAmount));
-			
+			foodDigested = 0;
+			satDigested = 0;
+
+			FoodData data = player.getFoodData();
+			double part = amount;
+			int maxFood = 20 - data.getFoodLevel();
+			for(int i = 0; i < content.size() && maxFood > 0; i++)
+			{
+				if(i != content.size() - 1)
+					part /= 2;
+				Food food = content.get(i);
+
+				digest(food, part, maxFood);
+				if(food.progress >= 1)
+				{
+					for(Pair<MobEffectInstance, Float> pair : food.effects)
+						if(pair.getFirst() != null && player.level.random.nextFloat() < pair.getSecond())
+							player.addEffect(new MobEffectInstance(pair.getFirst()));
+					content.remove(i--);
+				}
+				maxFood = 20 - data.getFoodLevel() - foodDigested;
+				if(maxFood < 1)
+					break;
+			}
+
+			data.setFoodLevel(data.getFoodLevel() + foodDigested);
+			data.setSaturation(Math.min(data.getFoodLevel(), data.getSaturationLevel() + satDigested));
+
 			totalFood = 0;
-			content.forEach((food) -> {totalFood += food.foodRemaining();});
-			
+			content.forEach((food) -> {
+				totalFood += food.foodRemaining();
+			});
+
 			MobEffectInstance ss = player.getEffect(Registration.STRONG_STOMACH.get());
 			int ext;
-			if((ext = totalFood - 20 - (ss==null?0:(ss.getAmplifier()+1)*8)) > 0 && !player.hasEffect(Registration.VOMITING.get()))
+			if((ext = totalFood - 20 - (ss == null ? 0 : (ss.getAmplifier() + 1) * 8)) > 0 && !player.hasEffect(Registration.VOMITING.get()))
 			{
-				player.addEffect(new MobEffectInstance(Registration.OVERSTUFFED.get(), 80, ext/8 - (ss==null?0:ss.getAmplifier())));
+				player.addEffect(new MobEffectInstance(Registration.OVERSTUFFED.get(), 80, ext / 8 - (ss == null ? 0 : ss.getAmplifier())));
 			}
-			
+
 			sendUpdatePacket(player);
 		}
 	}
 
 	public static void sendUpdatePacket(Player player)
 	{
-		Messages.sendToPlayer(new StomachPacket(player.getCapability(PlayerStomachProvider.PLAYER_STOMACH).orElse(new PlayerStomach())), (ServerPlayer)player);
+		Messages.sendToPlayer(new StomachPacket(player.getCapability(PlayerStomachProvider.PLAYER_STOMACH).orElse(new PlayerStomach())), (ServerPlayer) player);
 	}
-	
+
 	public void copyFrom(PlayerStomach source)
 	{
 		this.content.clear();
-		for (Food food : source.content)
+		for(Food food : source.content)
 			this.content.add(food);
 		this.totalFood = source.totalFood;
 	}
@@ -123,7 +142,7 @@ public class PlayerStomach
 	public void saveNBTData(CompoundTag compound)
 	{
 		ListTag list = new ListTag();
-		for (Food food : content)
+		for(Food food : content)
 			list.add(food.getNBT());
 		compound.put("content", list);
 		compound.putInt("total", this.totalFood);
@@ -137,7 +156,7 @@ public class PlayerStomach
 		});
 		this.totalFood = compound.getInt("total");
 	}
-	
+
 	@Override
 	public String toString()
 	{
@@ -147,7 +166,7 @@ public class PlayerStomach
 	public static class Food
 	{
 		public static final List<Pair<MobEffectInstance, Float>> EMPTY_EFFECTS = ImmutableList.of();
-		
+
 		private final int food;
 		private final float sat;
 		private final List<Pair<MobEffectInstance, Float>> effects;
@@ -173,33 +192,30 @@ public class PlayerStomach
 		{
 			this(prop, 0);
 		}
-		
+
 		protected int foodDigested()
 		{
-			return (int)(progress*food);
+			return (int) (progress * food);
 		}
-		
+
 		protected int foodRemaining()
 		{
 			return food - foodDigested();
 		}
-		
-		protected double digestNeeded(int amount)
+
+		protected double factorDigestNeeded(int amount)
 		{
-			return amount/food - progress;
+			return (double) (amount + foodDigested()) / food;
 		}
-		
+
 		protected int foodGained(double newProg)
 		{
-			return (int) (Math.min(1,newProg) * food) - (int) (progress * food);
+			return (int) (Math.min(1, newProg) * food) - (int) (progress * food);
 		}
-		protected double satGained(double newProg)
+
+		protected float satGained(double newProg)
 		{
-			return floorTo5(Math.min(1,newProg) * sat) - floorTo5(progress * sat);
-		}
-		private static double floorTo5(double f)
-		{
-			return ((int) (f / .5f)) * .5f;
+			return (float) (Math.min(1, newProg) * sat - progress * sat);
 		}
 
 		public CompoundTag getNBT()
@@ -221,29 +237,9 @@ public class PlayerStomach
 
 		public static Food fromNBT(CompoundTag tag)
 		{
-			return new Food(tag.getInt("food"), tag.getFloat("sat"), tag.getDouble("prog"), tag.getList("effects", Tag.TAG_COMPOUND).stream().map((nbt) -> Pair.of(MobEffectInstance.load((CompoundTag)nbt),((CompoundTag)nbt).getFloat("prob"))).toList());
+			return new Food(tag.getInt("food"), tag.getFloat("sat"), tag.getDouble("prog"), tag.getList("effects", Tag.TAG_COMPOUND).stream().map((nbt) -> Pair.of(MobEffectInstance.load((CompoundTag) nbt), ((CompoundTag) nbt).getFloat("prob"))).toList());
 		}
 
-		public float getDigest()
-		{
-			return sat;
-		}
-
-		public int getFood()
-		{
-			return food;
-		}
-		
-		public double getProgress()
-		{
-			return progress;
-		}
-		
-		public List<Pair<MobEffectInstance, Float>> getEffects()
-		{
-			return effects;
-		}
-		
 		@Override
 		public String toString()
 		{
