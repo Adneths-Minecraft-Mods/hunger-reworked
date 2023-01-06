@@ -73,7 +73,7 @@ public class FoodEventHandler
 		if (tickCounter++ > 60)
 		{
 			if (!event.player.getAbilities().instabuild)
-				event.player.getCapability(PlayerStomachProvider.PLAYER_STOMACH).ifPresent((stomach) -> stomach.digest(event.player, 0.1f));
+				event.player.getCapability(PlayerStomachProvider.PLAYER_STOMACH).ifPresent((stomach) -> stomach.digest(event.player, 0.1));
 			tickCounter = 0;
 		}
 	}
