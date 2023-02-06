@@ -4,13 +4,15 @@
 specificationTitle = 'hunger_reworked'
 specificationVersion = '1'
 
-version = '1.18.2-1.1.1'
+version = '1.18.2-1.2.0'
 group = 'me.adneths'
 archivesBaseName = 'HungerReworked'
 
 dependencies {
     minecraft 'net.minecraftforge:forge:1.18.2-40.1.73'
     annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
+    
+    compileOnly fg.deobf("curse.maven:diet-443570:3751149")
 }
 
 mixin {

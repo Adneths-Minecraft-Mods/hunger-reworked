@@ -15,18 +15,28 @@ import net.minecraft.world.item.ItemStack;
 @Mixin(Player.class)
 public abstract class MixinPlayer
 {
-	@Redirect(method = "eat", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/food/FoodData;eat(Lnet/minecraft/world/item/Item;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/entity/LivingEntity;)V"),
-			require = 1)
-	public void redirectEat(FoodData foodData, Item pItem, ItemStack pStack, LivingEntity entity)
+	/*
+	@Shadow
+	private FoodData foodData;
+
+	@Inject(at = @At("RETURN"), method = "<init>*", require = 1)
+	public void diet$constructPlayer(CallbackInfo ci)
+	{
+		((PlayerSensitive) foodData).setPlayer((Player) (Object) this);
+	}
+	*/
+	
+	@Redirect(method = "eat", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/food/FoodData;eat(Lnet/minecraft/world/item/Item;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/entity/LivingEntity;)V"), require = 1)
+	private void redirectEat(FoodData foodData, Item pItem, ItemStack pStack, LivingEntity entity)
 	{
 		if(pItem.isEdible() && entity instanceof Player player)
 		{
 			PlayerStomach stomach = player.getCapability(PlayerStomachProvider.PLAYER_STOMACH).orElse(null);
 			if(stomach != null)
-				stomach.addFood(player, new PlayerStomach.Food(pStack.getFoodProperties(player)));
+				stomach.addFood(player, new PlayerStomach.Food(pStack.copy(), pStack.getFoodProperties(player)));
 			else
 				foodData.eat(pItem, pStack, entity);
 		}
 	}
-	
+
 }

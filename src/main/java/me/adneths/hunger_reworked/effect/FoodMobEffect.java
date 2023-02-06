@@ -2,7 +2,9 @@ package me.adneths.hunger_reworked.effect;
 
 import me.adneths.hunger_reworked.capability.PlayerStomach;
 import me.adneths.hunger_reworked.capability.PlayerStomachProvider;
+import me.adneths.hunger_reworked.init.CommonSide;
 import me.adneths.hunger_reworked.init.Registration;
+import me.adneths.hunger_reworked.integration.diet.ProxyIDietGroup;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -61,6 +63,14 @@ public class FoodMobEffect extends MobEffect
 						if (food.getFoodLevel() > Math.max(0,10 - 2 * pAmplifier))
 							food.setFoodLevel(food.getFoodLevel() - 1);
 					}
+
+					CommonSide.dietProxy.get(player).ifPresent(diet -> {
+						for (ProxyIDietGroup group : CommonSide.dietProxy.getGroups()) {
+							float val = diet.getValue(group.getName());
+							diet.setValue(group.getName(), Math.min(val, Math.max(0.2f - pAmplifier*0.05f, val*0.985f)));
+						}
+						diet.sync();
+					});
 				}
 
 				Level level = player.level;
@@ -78,7 +88,7 @@ public class FoodMobEffect extends MobEffect
 		if (this == Registration.OVERSTUFFED.get())
 			return pDuration % 20 == 0;
 		else if (this == Registration.VOMITING.get())
-			return pDuration % 2 == 0;
+			return pDuration % 4 == 0;
 		else if (this == Registration.STRONG_STOMACH.get())
 			return pDuration % 10 == 0;
 		return false;

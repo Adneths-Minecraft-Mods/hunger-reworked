@@ -1,6 +1,9 @@
 package me.adneths.hunger_reworked.init;
 
+import java.lang.reflect.InvocationTargetException;
+
 import me.adneths.hunger_reworked.event.FoodEventHandler;
+import me.adneths.hunger_reworked.integration.diet.ProxyDiet;
 import me.adneths.hunger_reworked.network.Messages;
 import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.Item;
@@ -14,12 +17,15 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.brewing.BrewingRecipeRegistry;
 import net.minecraftforge.common.crafting.NBTIngredient;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLLoadCompleteEvent;
 import net.minecraftforge.registries.ForgeRegistries;
 
 public class CommonSide
 {	
+	public static ProxyDiet dietProxy;
+	
 	@SubscribeEvent
 	public static void init(final FMLCommonSetupEvent event)
 	{
@@ -30,6 +36,21 @@ public class CommonSide
 			BrewingRecipeRegistry.addRecipe(NBTIngredient.of(getPotion(Registration.STRONG_STOMACH_POTION.get())), Ingredient.of(Items.GLOWSTONE_DUST), getPotion(Registration.STRONG_STOMACH_POTION_STRONG.get()));
 		});
 		MinecraftForge.EVENT_BUS.register(FoodEventHandler.class);
+		if(ModList.get().isLoaded("diet"))
+		{
+			try
+			{
+				dietProxy = Class.forName("me.adneths.hunger_reworked.integration.diet.PresentDiet").asSubclass(ProxyDiet.class).getDeclaredConstructor().newInstance();
+			}
+			catch(IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | ClassNotFoundException e)
+			{
+				e.printStackTrace();
+			}
+		}
+		else
+		{
+			dietProxy = new ProxyDiet() {};
+		}
 	}
 	
 	private static ItemStack getPotion(Potion potion)

@@ -11,6 +11,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -92,7 +93,7 @@ public class FoodEventHandler
 				event.setCanceled(true);
 				
 				player.getCapability(PlayerStomachProvider.PLAYER_STOMACH).ifPresent((stomach) -> {
-					stomach.addFood(event.getPlayer(), new Food(2, 0.1f, 0, Food.EMPTY_EFFECTS));
+					stomach.addFood(event.getPlayer(), new Food(new ItemStack(Items.CAKE), 2, 0.1f, 0, Food.EMPTY_EFFECTS));
 
 					Level level = player.level;
 					player.awardStat(Stats.EAT_CAKE_SLICE);
