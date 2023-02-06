@@ -37,12 +37,15 @@ public class ClientSide
 			RenderSystem.setShader(GameRenderer::getPositionTexShader);
 			RenderSystem.setShaderTexture(0, TEXTURE_LOCATION);
 			int maxAmount = Math.max(foodAmount, 20 + ssa * 8);
-			for (int j = 0; j < Math.max(1, maxAmount + 19 / 20); j++)
+			
+			int rows = Math.max(1, (maxAmount + 19) / 20);
+			int rowHeight = Math.max(3, 12 - rows*2);
+			for (int j = rows-1; j > -1; j--)
 				for (int i = 0; i < Math.min(10, j == 0 ? 10 : ((maxAmount + 1) / 2) - j * 10); i++)
-					GuiComponent.blit(poseStack, left - 9 - 8 * i, top - 10 * j, 8, 8, foodAmount - i * 2 - j * 20 < 1 ? 0 : foodAmount - i * 2 - j * 20 == 1 ? 16 : 32,
+					GuiComponent.blit(poseStack, left - 9 - 8 * i, top - rowHeight * j, 8, 8, foodAmount - i * 2 - j * 20 < 1 ? 0 : foodAmount - i * 2 - j * 20 == 1 ? 16 : 32,
 							j > 0 && i + j * 10 - 10 < ssa * 4 ? 16 : 0, 16, 16, 48, 32);
 
-			gui.rightHeight += 10 * (1 + (foodAmount - 1) / 20);
+			gui.rightHeight += rowHeight * (rows-1) + 10;
 		});
 	};
 	
