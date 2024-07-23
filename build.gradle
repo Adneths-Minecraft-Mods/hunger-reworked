@@ -22,38 +22,3 @@ mixin {
 	debug.verbose = true
     debug.export = true
 }
-
-
-println "Java: ${System.getProperty 'java.version'}, JVM: ${System.getProperty 'java.vm.version'} (${System.getProperty 'java.vendor'}), Arch: ${System.getProperty 'os.arch'}"
-minecraft {
-	runs {
-        client {
-            workingDirectory project.file('runClient')
-            property 'forge.logging.markers', 'REGISTRIES'
-            property 'forge.logging.console.level', 'debug'
-            property 'forge.enabledGameTestNamespaces', 'hunger_reworked'
-            mods { 'hunger_reworked' { source sourceSets.main } }
-        }
-        server {
-            workingDirectory project.file('runServer')
-            property 'forge.logging.markers', 'REGISTRIES'
-            property 'forge.logging.console.level', 'debug'
-            property 'forge.enabledGameTestNamespaces', 'hunger_reworked'
-            mods { 'hunger_reworked' { source sourceSets.main } }
-        }
-        gameTestServer {
-            workingDirectory project.file('runTest')
-            property 'forge.logging.markers', 'REGISTRIES'
-            property 'forge.logging.console.level', 'debug'
-            property 'forge.enabledGameTestNamespaces', 'hunger_reworked'
-            mods { 'hunger_reworked' { source sourceSets.main } }
-        }
-        data {
-            workingDirectory project.file('runData')
-            property 'forge.logging.markers', 'REGISTRIES'
-            property 'forge.logging.console.level', 'debug'
-            args '--mod', 'hunger_reworked', '--all', '--output', file('src/generated/resources/'), '--existing', file('src/main/resources/')
-            mods { 'hunger_reworked' { source sourceSets.main } }
-        }
-    }
-}
